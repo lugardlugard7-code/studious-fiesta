@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Eternal Realm: Mobile</title>
+    <style>
+        body { background: #000; color: #fff; font-family: monospace; margin: 0; padding: 0; overflow: hidden; }
+        #world { display: block; width: 100vw; height: 100vh; image-rendering: pixelated; }
+        #ui { position: absolute; top: 10px; left: 10px; background: rgba(0,0,0,0.8); padding: 5px; font-size: 12px; pointer-events: none; border: 1px solid #444; }
+        #log { position: absolute; bottom: 0; width: 100%; height: 30%; background: rgba(0,0,0,0.8); overflow-y: auto; font-size: 10px; border-top: 1px solid #555; }
+    </style>
+</head>
+<body>
+    <div id="ui">Year: <span id="yr">0</span> | Pop: <span id="pop">0</span></div>
+    <canvas id="world"></canvas>
+    <div id="log">--- World Chronicles ---<br></div>
+
+    <script>
+        const canvas = document.getElementById('world');
+        const ctx = canvas.getContext('2d');
+        const log = document.getElementById('log');
+
+        // This makes the canvas match your phone's exact size
+        function resize() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resize);
+        resize();
+
+        const species = [
+            { n: 'Human', c: '#ffdbac', i: 'H' },
+            { n: 'Orc', c: '#4a7c44', i: 'O' },
+            { n: 'Elf', c: '#f1c40f', i: 'E' },
+            { n: 'Dwarf', c: '#95a5a6', i: 'D' },
+            { n: 'Goblin', c: '#2ecc71', i: 'G' }
+        ];
+
+        let entities = [];
+        for(let i=0; i<30; i++) spawn();
+
+        function spawn() {
+            const s = species[Math.floor(Math.random()*species.length)];
+            entities.push({
+                x: Math.random()*canvas.width,
+                y: Math.random()*(canvas.height * 0.7), // Stay above the log
+                s: s,
+                p: null
+            });
+        }
+
+        function loop() {
+            ctx.fillStyle = '#112211'; // Dark green grass
+            ctx.fillRect(0,0,canvas.width, canvas.height);
+
+            entities.forEach(e => {
+                e.x += (Math.random()-0.5) * 2;
+                e.y += (Math.random()-0.5) * 2;
+                
+                // Keep inside screen
+                if(e.x < 0) e.x = canvas.width;
+                if(e.x > canvas.width) e.x = 0;
+                if(e.y < 0) e.y = canvas.height * 0.7;
+                if(e.y > canvas.height * 0.7) e.y = 0;
+
+                ctx.fillStyle = e.s.c;
+                ctx.fillRect(e.x, e.y, 8, 8);
+                ctx.fillStyle = "white";
+                ctx.fillText(e.s.i, e.x, e.y - 2);
+            });
+            requestAnimationFrame(loop);
+        }
+        loop();
+
+        // Marriage Log (Simplified)
+        setInterval(() => {
+            const e1 = entities[Math.floor(Math.random()*entities.length)];
+            const e2 = entities[Math.floor(Math.random()*entities.length)];
+            if(e1 !== e2) {
+                const msg = e1.s.n + " married " + e2.s.n;
+                log.innerHTML = "<div>" + msg + "</div>" + log.innerHTML;
+            }
+        }, 5000);
+    </script>
+</body>
+</html>
